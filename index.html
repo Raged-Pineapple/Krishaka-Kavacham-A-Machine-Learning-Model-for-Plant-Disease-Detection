@@ -112,7 +112,6 @@
                 <div class="text">
                     <h1>Identify and cure plant diseases with Team Vidyuth</h1>
                     <p>Is your green buddy dying? Try the Team Vidyuth app to identify the cause and get extensive disease and care info in a snap.</p>
-                    <button class="nav-btn" onclick="loadModel()">Load Model</button>
                     <button class="nav-btn" onclick="loadClassIndices()">Load Class Indices</button>
                     <input type="file" id="imageInput" accept="image/*" style="display: block; margin-top: 10px;">
                     <button class="cure-btn" onclick="diagnose()">Diagnose Now</button>
@@ -122,52 +121,37 @@
         </div>
     </main>
     <script>
-        function loadModel() {
-            fetch('/load_model', { method: 'POST' })
-                .then(response => response.json())
-                .then(data => alert(data.message || data.error))
-                .catch(error => alert('Error loading model: ' + error));
-        }
-    
         function loadClassIndices() {
-            fetch('/load_class_indices', { method: 'POST' })
+            fetch('data/class_indices.json')
                 .then(response => response.json())
-                .then(data => alert(data.message || data.error))
-                .catch(error => alert('Error loading class indices: ' + error));
+                .then(data => {
+                    console.log('Class indices loaded:', data);
+                    alert('Class indices loaded successfully');
+                })
+                .catch(error => {
+                    console.error('Error loading class indices:', error);
+                    alert('Error loading class indices');
+                });
         }
-    
+
         function diagnose() {
             const fileInput = document.getElementById('imageInput');
             if (!fileInput.files.length) {
                 alert('Please select an image first.');
                 return;
             }
-    
-            const formData = new FormData();
-            formData.append('image', fileInput.files[0]);
-    
-            fetch('/process_image', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                const resultDiv = document.getElementById('result');
-                if (data.error) {
-                    resultDiv.innerHTML = '<div class="result-box">Error: ' + data.error + '</div>';
-                } else {
-                    resultDiv.innerHTML = `
-                        <div class="result-box">
-                            <p>Class: ${data.class}</p>
-                            <p>Percentage Disease: ${data.percentage_disease}%</p>
-                            <p>${data.class.includes('healthy') ? 'THE PLANT IS HEALTHY' : 'THE PLANT NEEDS TO BE TREATED'}</p>
-                        </div>`;
-                }
-                resultDiv.style.display = 'block'; // Show the result box
-            })
-            .catch(error => {
-                alert('Error diagnosing image: ' + error);
-            });
+
+            // Your image processing logic here
+
+            const resultDiv = document.getElementById('result');
+            // Mock result for demonstration
+            resultDiv.innerHTML = `
+                <div class="result-box">
+                    <p>Class: Healthy</p>
+                    <p>Percentage Disease: 0%</p>
+                    <p>THE PLANT IS HEALTHY</p>
+                </div>`;
+            resultDiv.style.display = 'block'; // Show the result box
         }
     </script>
 </body>
