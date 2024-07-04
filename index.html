@@ -112,7 +112,6 @@
                 <div class="text">
                     <h1>Identify and cure plant diseases with Team Vidyuth</h1>
                     <p>Is your green buddy dying? Try the Team Vidyuth app to identify the cause and get extensive disease and care info in a snap.</p>
-                    <button class="nav-btn" onclick="loadClassIndices()">Load Class Indices</button>
                     <input type="file" id="imageInput" accept="image/*" style="display: block; margin-top: 10px;">
                     <button class="cure-btn" onclick="diagnose()">Diagnose Now</button>
                     <div id="result" class="result-box" style="display: none; margin-top: 10px;"></div>
@@ -121,19 +120,6 @@
         </div>
     </main>
     <script>
-        function loadClassIndices() {
-            fetch('data/class_indices.json')
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Class indices loaded:', data);
-                    alert('Class indices loaded successfully');
-                })
-                .catch(error => {
-                    console.error('Error loading class indices:', error);
-                    alert('Error loading class indices');
-                });
-        }
-
         function diagnose() {
             const fileInput = document.getElementById('imageInput');
             if (!fileInput.files.length) {
@@ -141,17 +127,27 @@
                 return;
             }
 
-            // Your image processing logic here
+            const formData = new FormData();
+            formData.append('image', fileInput.files[0]);
 
-            const resultDiv = document.getElementById('result');
-            // Mock result for demonstration
-            resultDiv.innerHTML = `
-                <div class="result-box">
-                    <p>Class: Healthy</p>
-                    <p>Percentage Disease: 0%</p>
-                    <p>THE PLANT IS HEALTHY</p>
-                </div>`;
-            resultDiv.style.display = 'block'; // Show the result box
+            fetch('/process_image', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = `
+                    <p>Class: ${data.class}</p>
+                    <p>Percentage Disease: ${data.percentage_disease}%</p>
+                    <p>${data.message}</p>
+                `;
+                resultDiv.style.display = 'block'; // Show the result box
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error diagnosing the plant. Please try again.');
+            });
         }
     </script>
 </body>
