@@ -2,29 +2,16 @@ from flask import Flask, request, jsonify, send_from_directory
 from tensorflow.keras.models import load_model
 import numpy as np
 import cv2
-import json
 from PIL import Image
 import os
-import requests
 from flask_cors import CORS
 from random import randint
-
-# Download the model file if not already present
-model_path = 'Plantdisease-1.h5'
-if not os.path.exists(model_path):
-    url = 'https://github.com/AdityaAdi07/EL_Vidyuth/raw/main/Plantdisease-1.h5'
-    response = requests.get(url)
-    if response.status_code == 200:
-        with open(model_path, 'wb') as file:
-            file.write(response.content)
-    else:
-        print('Failed to retrieve the file:', response.status_code)
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
-# Load the saved model globally
-model = None  # Initially set to None until loaded
+# Global variables
+model = None
 class_indices = {
     "0": "Apple___Apple_scab",
     "1": "Apple___Black_rot",
@@ -66,15 +53,16 @@ class_indices = {
     "37": "Tomato___healthy"
 }
 
-@app.before_first_request
-def load_model_and_class_indices():
-    global model, class_indices
-    try:
-        # Load the model
-        model = load_model(model_path)
-        print("Model loaded successfully.")
-    except Exception as e:
-        print(f"Error loading model: {e}")
+# Load the saved model globally
+model_path = 'Plantdisease-1.h5'
+if not os.path.exists(model_path):
+    print(f"Model file '{model_path}' not found.")
+
+try:
+    model = load_model(model_path)
+    print("Model loaded successfully.")
+except Exception as e:
+    print(f"Error loading model: {e}")
 
 # Serve the HTML file
 @app.route('/')
@@ -106,7 +94,7 @@ def display_disease_percentage(disease, alpha, threshold):
 # Process the selected image
 @app.route('/process_image', methods=['POST'])
 def process_image():
-    global model, class_indices, Alpha
+    global model, class_indices
     if model is None:
         return jsonify({"error": "Model not loaded. Please load the model first."}), 400
 
