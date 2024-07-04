@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, send_from_directory
-from tensorflow.keras.models import load_model#type:ignore
+from tensorflow.keras.models import load_model # type: ignore
 import numpy as np
 import cv2
 import json
@@ -8,19 +8,21 @@ import os
 from random import randint
 import requests
 
-url = 'https://github.com/AdityaAdi07/EL_Vidyuth/raw/main/Plantdisease-1.h5'
-response = requests.get(url)
-
-if response.status_code == 200:
-    with open('Plantdisease-1.h5', 'wb') as file:
-        file.write(response.content)
-else:
-    print('Failed to retrieve the file:', response.status_code)
+# Download the model file if not already present
+model_path = 'Plantdisease-1.h5'
+if not os.path.exists(model_path):
+    url = 'https://github.com/AdityaAdi07/EL_Vidyuth/raw/main/Plantdisease-1.h5'
+    response = requests.get(url)
+    if response.status_code == 200:
+        with open(model_path, 'wb') as file:
+            file.write(response.content)
+    else:
+        print('Failed to retrieve the file:', response.status_code)
 
 app = Flask(__name__)
 
-# Global variables
-model = load_model('path/to/Plantdisease-1.h5')
+# Load the saved model globally
+model = load_model(model_path)
 class_indices = None
 Alpha = None
 
@@ -29,30 +31,17 @@ Alpha = None
 def serve_html():
     return send_from_directory('', 'el_vidyuth.html')
 
-# Load the saved model
-@app.route('/load_model', methods=['POST'])
-def load_saved_model():
-    global model
-    try:
-        model_path = r'C:\RVCE(2023-27)\venv\Plantdisease-1.h5'
-        model = load_model(model_path)
-        return jsonify({"message": "Model loaded successfully!"}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
 # Load class indices
-
 @app.route('/load_class_indices', methods=['POST'])
 def load_class_indices():
     global class_indices
     try:
-        class_indices_path = r'C:\RVCE(2023-27)\venv\class_indices (1).json'
+        class_indices_path = 'class_indices.json'  # Make sure this file is correctly named and placed
         with open(class_indices_path, 'r') as f:
             class_indices = json.load(f)
         return jsonify({"message": "Class indices loaded successfully!"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 def get_alpha(image):
     alpha = np.zeros((image.shape[0], image.shape[1]), dtype=np.uint8)
