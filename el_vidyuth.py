@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, send_from_directory
-from tensorflow.keras.models import load_model # type: ignore
+from tensorflow.keras.models import load_model
 import numpy as np
 import cv2
 import json
@@ -29,7 +29,7 @@ Alpha = None
 # Serve the HTML file
 @app.route('/')
 def serve_html():
-    return send_from_directory('', 'el_vidyuth.html')
+    return send_from_directory('', 'index.html')
 
 # Load class indices
 @app.route('/load_class_indices', methods=['POST'])
