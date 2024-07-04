@@ -63,7 +63,6 @@ class_indices = {
     "36": "Tomato___Tomato_mosaic_virus",
     "37": "Tomato___healthy"
 }
-
 @app.before_first_request
 def load_model_and_class_indices():
     global model
@@ -72,7 +71,9 @@ def load_model_and_class_indices():
         model = load_model(model_path)
         print("Model loaded successfully.")
     except Exception as e:
-        print(f"Error loading model: {e}")
+        error_message = f"Error loading model: {str(e)}"
+        print(error_message)
+        return jsonify({"error": error_message}), 500  # Return detailed error message
 
 # Serve the HTML file
 @app.route('/')
