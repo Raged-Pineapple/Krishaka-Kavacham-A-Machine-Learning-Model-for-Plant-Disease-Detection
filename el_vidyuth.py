@@ -7,6 +7,7 @@ from PIL import Image
 import os
 import requests
 from flask_cors import CORS
+from random import randint
 
 # Download the model file if not already present
 model_path = 'Plantdisease-1.h5'
@@ -27,22 +28,26 @@ model = None  # Initially set to None until loaded
 class_indices = None
 Alpha = None
 
+@app.before_first_request
+def load_model_and_class_indices():
+    global model, class_indices
+    try:
+        # Load the model
+        model = load_model(model_path)
+        print("Model loaded successfully.")
+
+        # Load class indices
+        class_indices_path = 'class_indices.json'  # Make sure this file is correctly named and placed
+        with open(class_indices_path, 'r') as f:
+            class_indices = json.load(f)
+        print("Class indices loaded successfully.")
+    except Exception as e:
+        print(f"Error loading model or class indices: {e}")
+
 # Serve the HTML file
 @app.route('/')
 def serve_html():
     return send_from_directory('', 'index.html')
-
-# Load class indices
-@app.route('/load_class_indices', methods=['POST'])
-def load_class_indices():
-    global class_indices
-    try:
-        class_indices_path = 'class_indices.json'  # Make sure this file is correctly named and placed
-        with open(class_indices_path, 'r') as f:
-            class_indices = json.load(f)
-        return jsonify({"message": "Class indices loaded successfully!"}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 def get_alpha(image):
     alpha = np.zeros((image.shape[0], image.shape[1]), dtype=np.uint8)
@@ -125,4 +130,3 @@ def process_image():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
