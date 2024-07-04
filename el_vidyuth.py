@@ -6,11 +6,21 @@ import json
 from PIL import Image
 import os
 from random import randint
+import requests
+
+url = 'https://github.com/AdityaAdi07/EL_Vidyuth/raw/main/Plantdisease-1.h5'
+response = requests.get(url)
+
+if response.status_code == 200:
+    with open('Plantdisease-1.h5', 'wb') as file:
+        file.write(response.content)
+else:
+    print('Failed to retrieve the file:', response.status_code)
 
 app = Flask(__name__)
 
 # Global variables
-model = None
+model = load_model('path/to/Plantdisease-1.h5')
 class_indices = None
 Alpha = None
 
