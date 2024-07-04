@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, send_from_directory
 from tensorflow.keras.models import load_model
 import numpy as np
 import cv2
+import json
 from PIL import Image
 import os
 import requests
@@ -24,9 +25,6 @@ CORS(app)  # Enable CORS for all routes
 
 # Load the saved model globally
 model = None  # Initially set to None until loaded
-Alpha = None
-
-# Define class indices dictionary
 class_indices = {
     "0": "Apple___Apple_scab",
     "1": "Apple___Black_rot",
@@ -70,7 +68,7 @@ class_indices = {
 
 @app.before_first_request
 def load_model_and_class_indices():
-    global model
+    global model, class_indices
     try:
         # Load the model
         model = load_model(model_path)
@@ -108,7 +106,7 @@ def display_disease_percentage(disease, alpha, threshold):
 # Process the selected image
 @app.route('/process_image', methods=['POST'])
 def process_image():
-    global model, Alpha
+    global model, class_indices, Alpha
     if model is None:
         return jsonify({"error": "Model not loaded. Please load the model first."}), 400
 
