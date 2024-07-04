@@ -5,8 +5,8 @@ import cv2
 import json
 from PIL import Image
 import os
-from random import randint
 import requests
+from flask_cors import CORS
 
 # Download the model file if not already present
 model_path = 'Plantdisease-1.h5'
@@ -20,9 +20,10 @@ if not os.path.exists(model_path):
         print('Failed to retrieve the file:', response.status_code)
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 # Load the saved model globally
-model = load_model(model_path)
+model = None  # Initially set to None until loaded
 class_indices = None
 Alpha = None
 
@@ -124,3 +125,4 @@ def process_image():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
