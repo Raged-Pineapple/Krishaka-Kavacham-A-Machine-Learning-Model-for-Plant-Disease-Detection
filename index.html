@@ -145,12 +145,18 @@
     
             const formData = new FormData();
             formData.append('image', fileInput.files[0]);
-    
+
+            
             fetch('/process_image', {
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
                 const resultDiv = document.getElementById('result');
                 if (data.error) {
