@@ -1,85 +1,48 @@
-from flask import Flask, request, send_from_directory
-from tensorflow.keras.models import load_model
+from flask import Flask, request, jsonify, send_from_directory
+from tensorflow.keras.models import load_model#type:ignore
 import numpy as np
 import cv2
+import json
 from PIL import Image
 import os
-from flask_cors import CORS
 from random import randint
-import requests
 
-# Download the model file if not already present
-model_path = 'Plantdisease-1.h5'
-if not os.path.exists(model_path):
-    url = 'https://github.com/AdityaAdi07/EL_Vidyuth/raw/main/Plantdisease-1.h5'
-    response = requests.get(url)
-    if response.status_code == 200:
-        with open(model_path, 'wb') as file:
-            file.write(response.content)
-    else:
-        print('Failed to retrieve the file:', response.status_code)
+app = Flask(_name_)
 
-app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
-
-# Load the saved model globally
-model = None  # Initially set to None until loaded
-class_indices = {
-    "0": "Apple___Apple_scab",
-    "1": "Apple___Black_rot",
-    "2": "Apple___Cedar_apple_rust",
-    "3": "Apple___healthy",
-    "4": "Blueberry___healthy",
-    "5": "Cherry_(including_sour)___Powdery_mildew",
-    "6": "Cherry_(including_sour)___healthy",
-    "7": "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot",
-    "8": "Corn_(maize)___Common_rust_",
-    "9": "Corn_(maize)___Northern_Leaf_Blight",
-    "10": "Corn_(maize)___healthy",
-    "11": "Grape___Black_rot",
-    "12": "Grape___Esca_(Black_Measles)",
-    "13": "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)",
-    "14": "Grape___healthy",
-    "15": "Orange___Haunglongbing_(Citrus_greening)",
-    "16": "Peach___Bacterial_spot",
-    "17": "Peach___healthy",
-    "18": "Pepper,_bell___Bacterial_spot",
-    "19": "Pepper,_bell___healthy",
-    "20": "Potato___Early_blight",
-    "21": "Potato___Late_blight",
-    "22": "Potato___healthy",
-    "23": "Raspberry___healthy",
-    "24": "Soybean___healthy",
-    "25": "Squash___Powdery_mildew",
-    "26": "Strawberry___Leaf_scorch",
-    "27": "Strawberry___healthy",
-    "28": "Tomato___Bacterial_spot",
-    "29": "Tomato___Early_blight",
-    "30": "Tomato___Late_blight",
-    "31": "Tomato___Leaf_Mold",
-    "32": "Tomato___Septoria_leaf_spot",
-    "33": "Tomato___Spider_mites Two-spotted_spider_mite",
-    "34": "Tomato___Target_Spot",
-    "35": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
-    "36": "Tomato___Tomato_mosaic_virus",
-    "37": "Tomato___healthy"
-}
-
-@app.before_first_request
-def load_model_and_class_indices():
-    global model
-    try:
-        # Load the model
-        model = load_model(model_path)
-        print("Model loaded successfully.")
-    except Exception as e:
-        error_message = "500: failed to load file_h5, Try again later!!"
-        print(error_message)
+# Global variables
+model = None
+class_indices = None
+Alpha = None
 
 # Serve the HTML file
 @app.route('/')
 def serve_html():
-    return send_from_directory('', 'index.html')
+    return send_from_directory('', 'el_vidyuth.html')
+
+# Load the saved model
+@app.route('/load_model', methods=['POST'])
+def load_saved_model():
+    global model
+    try:
+        model_path = r'C:\RVCE(2023-27)\venv\Plantdisease-1.h5'
+        model = load_model(model_path)
+        return jsonify({"message": "Model loaded successfully!"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# Load class indices
+
+@app.route('/load_class_indices', methods=['POST'])
+def load_class_indices():
+    global class_indices
+    try:
+        class_indices_path = r'C:\RVCE(2023-27)\venv\class_indices (1).json'
+        with open(class_indices_path, 'r') as f:
+            class_indices = json.load(f)
+        return jsonify({"message": "Class indices loaded successfully!"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 def get_alpha(image):
     alpha = np.zeros((image.shape[0], image.shape[1]), dtype=np.uint8)
@@ -103,22 +66,15 @@ def display_disease_percentage(disease, alpha, threshold):
     percent = (count / res) * 100 if res != 0 else 0
     return round(percent, 2)
 
-@app.route('/load_model', methods=['POST'])
-def load_model_endpoint():
-    # Endpoint logic
-    return "Model loaded successfully"
-
-@app.route('/load_class_indices', methods=['POST'])
-def load_class_indices_endpoint():
-    # Endpoint logic
-    return "Class indices loaded successfully"
-
 # Process the selected image
 @app.route('/process_image', methods=['POST'])
 def process_image():
-    global model, class_indices
+    global model, class_indices, Alpha
     if model is None:
-        return "Model not loaded. Please load the model first.", 400
+        return jsonify({"error": "Model not loaded. Please load the model first."}), 400
+
+    if class_indices is None:
+        return jsonify({"error": "Class indices not loaded. Please load the class indices first."}), 400
 
     try:
         # Get the file from the request
@@ -158,11 +114,14 @@ def process_image():
             threshold = 150  # Default threshold value
             percentage_disease = display_disease_percentage(Disease, Alpha, threshold)
 
-        response_text = f"Class: {predicted_class_name}\nPercentage Disease: {percentage_disease}%\nMessage: {message}"
-        return response_text, 200
+        return jsonify({
+            "class": predicted_class_name,
+            "percentage_disease": f"{percentage_disease}",
+            "message": message
+        }), 200
 
     except Exception as e:
-        return "500, Problem loading file_h5, Try again later", 500  # Return detailed error message
+        return jsonify({"error": str(e)}), 500
 
-if __name__ == '__main__':
+if _name_ == '_main_':
     app.run(debug=True)
