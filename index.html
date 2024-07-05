@@ -124,14 +124,14 @@
     <script>
         function loadModel() {
             fetch('/load_model', { method: 'POST' })
-                .then(response => response.json())
+                .then(response => response.text())
                 .then(data => alert(data.message || data.error))
                 .catch(error => alert('Error loading model: ' + error));
         }
     
         function loadClassIndices() {
             fetch('/load_class_indices', { method: 'POST' })
-                .then(response => response.json())
+                .then(response => response.text())
                 .then(data => alert(data.message || data.error))
                 .catch(error => alert('Error loading class indices: ' + error));
         }
