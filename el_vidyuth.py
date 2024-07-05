@@ -6,6 +6,7 @@ from PIL import Image
 import os
 from flask_cors import CORS
 from random import randint
+import requests
 
 # Download the model file if not already present
 model_path = 'Plantdisease-1.h5'
@@ -63,6 +64,7 @@ class_indices = {
     "36": "Tomato___Tomato_mosaic_virus",
     "37": "Tomato___healthy"
 }
+
 @app.before_first_request
 def load_model_and_class_indices():
     global model
@@ -71,9 +73,8 @@ def load_model_and_class_indices():
         model = load_model(model_path)
         print("Model loaded successfully.")
     except Exception as e:
-        error_message = f"500: failed to load file_h5, Try again later!!"
+        error_message = "500: failed to load file_h5, Try again later!!"
         print(error_message)
-        return jsonify({"error": error_message}), 500  # Return detailed error message
 
 # Serve the HTML file
 @app.route('/')
@@ -107,7 +108,7 @@ def display_disease_percentage(disease, alpha, threshold):
 def process_image():
     global model, class_indices
     if model is None:
-        return jsonify({"error": "Model not loaded. Please load the model first."}), 400
+        return "Model not loaded. Please load the model first.", 400
 
     try:
         # Get the file from the request
@@ -147,14 +148,11 @@ def process_image():
             threshold = 150  # Default threshold value
             percentage_disease = display_disease_percentage(Disease, Alpha, threshold)
 
-        return jsonify({
-            "class": predicted_class_name,
-            "percentage_disease": f"{percentage_disease}",
-            "message": message
-        }), 200
+        response_text = f"Class: {predicted_class_name}\nPercentage Disease: {percentage_disease}%\nMessage: {message}"
+        return response_text, 200
 
     except Exception as e:
-        return jsonify({"error": "500, Problem loading file_h5, Try again later")}), 500  # Return detailed error message
+        return "500, Problem loading file_h5, Try again later", 500  # Return detailed error message
 
 if __name__ == '__main__':
     app.run(debug=True)
