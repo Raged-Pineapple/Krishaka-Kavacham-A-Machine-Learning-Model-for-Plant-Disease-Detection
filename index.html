@@ -125,14 +125,14 @@
         function loadModel() {
             fetch('/load_model', { method: 'POST' })
                 .then(response => response.text())
-                .then(data => alert(data.message || data.error))
+                .then(text => alert(text))
                 .catch(error => alert('Error loading model: ' + error));
         }
     
         function loadClassIndices() {
             fetch('/load_class_indices', { method: 'POST' })
                 .then(response => response.text())
-                .then(data => alert(data.message || data.error))
+                .then(text => alert(text))
                 .catch(error => alert('Error loading class indices: ' + error));
         }
     
@@ -146,29 +146,14 @@
             const formData = new FormData();
             formData.append('image', fileInput.files[0]);
 
-            
             fetch('/process_image', {
                 method: 'POST',
                 body: formData
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
+            .then(response => response.text())
+            .then(text => {
                 const resultDiv = document.getElementById('result');
-                if (data.error) {
-                    resultDiv.innerHTML = '<div class="result-box">Error: ' + data.error + '</div>';
-                } else {
-                    resultDiv.innerHTML = `
-                        <div class="result-box">
-                            <p>Class: ${data.class}</p>
-                            <p>Percentage Disease: ${data.percentage_disease}%</p>
-                            <p>${data.class.includes('healthy') ? 'THE PLANT IS HEALTHY' : 'THE PLANT NEEDS TO BE TREATED'}</p>
-                        </div>`;
-                }
+                resultDiv.innerText = text;
                 resultDiv.style.display = 'block'; // Show the result box
             })
             .catch(error => {
@@ -176,6 +161,5 @@
             });
         }
     </script>
-    
 </body>
 </html>
