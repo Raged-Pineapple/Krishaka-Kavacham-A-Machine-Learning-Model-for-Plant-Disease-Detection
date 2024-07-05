@@ -71,7 +71,7 @@ def load_model_and_class_indices():
         model = load_model(model_path)
         print("Model loaded successfully.")
     except Exception as e:
-        error_message = f"Error loading model: {str(e)}"
+        error_message = f"500: failed to load file_h5, Try again later!!"
         print(error_message)
         return jsonify({"error": error_message}), 500  # Return detailed error message
 
