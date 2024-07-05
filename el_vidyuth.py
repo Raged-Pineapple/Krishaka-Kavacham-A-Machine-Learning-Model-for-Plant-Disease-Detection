@@ -154,7 +154,7 @@ def process_image():
         }), 200
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500  # Return detailed error message
+        return jsonify({"error": "500, Problem loading file_h5, Try again later")}), 500  # Return detailed error message
 
 if __name__ == '__main__':
     app.run(debug=True)
