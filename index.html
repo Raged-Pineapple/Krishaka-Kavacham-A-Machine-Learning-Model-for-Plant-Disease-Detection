@@ -133,7 +133,7 @@
             fetch('/load_class_indices', { method: 'POST' })
                 .then(response => response.json())
                 .then(data => alert(data.message || data.error))
-                .catch(error => alert('Error loading class indices: ' + error));
+                .catch(error => alert('Error 500: error loading file_h5, try again later ');
         }
     
         function diagnose() {
