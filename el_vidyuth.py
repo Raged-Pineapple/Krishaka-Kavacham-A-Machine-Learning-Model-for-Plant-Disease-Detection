@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, send_from_directory
 from tensorflow.keras.models import load_model
 import numpy as np
 import cv2
@@ -102,6 +102,16 @@ def display_disease_percentage(disease, alpha, threshold):
                 count += 1
     percent = (count / res) * 100 if res != 0 else 0
     return round(percent, 2)
+
+@app.route('/load_model', methods=['POST'])
+def load_model_endpoint():
+    # Endpoint logic
+    return "Model loaded successfully"
+
+@app.route('/load_class_indices', methods=['POST'])
+def load_class_indices_endpoint():
+    # Endpoint logic
+    return "Class indices loaded successfully"
 
 # Process the selected image
 @app.route('/process_image', methods=['POST'])
