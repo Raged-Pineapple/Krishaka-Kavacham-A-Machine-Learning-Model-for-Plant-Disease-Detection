@@ -91,6 +91,7 @@ def process_image():
 
         # Calculate Alpha channel
         Alpha = get_alpha(img)
+        
 
         # Process your image here with the loaded model
         img_resized = cv2.resize(img, (224, 224))  # Resize as per your model's input shape
